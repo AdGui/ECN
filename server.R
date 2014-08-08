@@ -55,6 +55,25 @@ shinyServer(function(input,output){
     date <- substr(dateh, start=7,stop=13)
     return(date)
   })
+    
+  output$sim <- renderText({
+    ECN_data <- dataset()
+    ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
+    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
+    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
+    str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
+    nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
+    aff <- length(which(as.factor(ECN_data.dum[,1])=="affecté"))
+    aff.p <- round(aff/nbr.t,2)*100
+    sim <- (length(which(str=="Di"))+length(which(str=="Sp")))
+    sim.p <- round(sim/nbr.t,2)*100
+    rie <- length(which(str=="ca"))
+    rie.p <- round(rie/nbr.t,2)*100
+    mal <- length(which(str=="ma"))
+    mal.p <- round(mal/nbr.t,2)*100
+    texte <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
+    return(texte)
+  })
   
   output$table <- renderDataTable({
     ECN_data <- dataset()
