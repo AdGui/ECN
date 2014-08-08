@@ -96,6 +96,8 @@ shinyUI(fluidPage(theme = "bootstrap.css",
               
   span("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
 
+  p(textOutput("sim"), inline=TRUE),
+  
   br(),
   
   tabsetPanel(
