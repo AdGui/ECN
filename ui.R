@@ -94,10 +94,10 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                   
   hr(),
               
-  span("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
-
-  p(textOutput("sim"), inline=TRUE),
+  p("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
   
+  p(textOutput("sim"), inline=TRUE),
+
   br(),
   
   tabsetPanel(
@@ -146,7 +146,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
         column(3,
           radioButtons(inputId="Choix.indic", 
             label="Indicateur :",
-            choices= list("Pourcentage"="pourcent","Nombre absolu"="abs"),
+            choices= list("Pourcentage"="pourcent","Nombre absolu"="abs","Offre"="offre"),
             selected = "pourcent", inline = TRUE
           )
         ),
@@ -232,7 +232,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
                     
     tabPanel(h4("Légendes"),
       h3("Notice",style="text-decoration:underline;"),
-      p("Les étudiants CESP comme ceux des armées ne sont pas inclus aux analyses"),
+      p("Les étudiants CESP comme ceux des armées ne sont pas inclus aux analyses (y compris pour l'avancement des choix)."),
       p("L\'ensemble des données sont issues de : ", a("https://www.cngsante.fr/chiron2014/celine/listing.html", href="https://www.cngsante.fr/chiron2014/celine/listing.html")),
       h3("Légende spécialités"),
       tableOutput("legende_spe"),
