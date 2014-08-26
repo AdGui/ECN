@@ -43,19 +43,14 @@ shinyServer(function(input,output){
     })
     return(date)
   })
-  
-  output$h <- renderText({
-    dateh <- actu()
-    h <- substr(dateh, start=1,stop=5)
-    return(h)
-  })
+
   
   output$date <- renderText({
     dateh <- actu()
     date <- substr(dateh, start=7,stop=13)
     return(date)
   })
-    
+  
   output$sim <- renderText({
     ECN_data <- dataset()
     ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
@@ -73,6 +68,12 @@ shinyServer(function(input,output){
     mal.p <- round(mal/nbr.t,2)*100
     texte <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
     return(texte)
+  })
+  
+  output$h <- renderText({
+     dateh <- actu()
+     h <- substr(dateh, start=1,stop=5)
+     return(h)
   })
   
   output$table <- renderDataTable({
@@ -165,7 +166,7 @@ shinyServer(function(input,output){
       ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$PQuart)])
     }
     
-    plot<-ggplot(ECN_data.dum, aes(x=Discipline,y=Etudiant))+
+    plot <- ggplot(ECN_data.dum, aes(x=Discipline,y=Etudiant))+
       geom_boxplot()+
       ylab("Classement")+
       xlab("Disciplines")
@@ -213,7 +214,7 @@ shinyServer(function(input,output){
     plot <- ggplot(ECN_data.dum, aes(x=Subdivision,y=Etudiant))+
       geom_boxplot()+
       ylab("Classement")+
-      xlab("Villes")
+      xlab("Subdivisions")
     print(plot)
   })
   
@@ -232,11 +233,13 @@ shinyServer(function(input,output){
     ville.vec <- as.numeric(substr(ECN_data[,11],start=2,stop=4))
     df_offre.comp <- data.frame(ECN_data.dum[min:max,4],spe.vec[min:max],ville.vec[min:max])
 
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
     Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
+    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
+    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
+    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
-    
+  
     if(input$Choix.indic=="abs"){
       ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
@@ -247,7 +250,9 @@ shinyServer(function(input,output){
       df_order <- data.frame(Discipline = c(as.character(df_order.dum$Discipline),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
       df_order <- df_order[order(df_order[,2],decreasing=TRUE),]
       df_order[,1] <- factor(df_order[,1], levels = df_order[,1])
-      plot <- ggplot(df_order,aes(x=Discipline))+geom_histogram(aes(y=Etudiant),stat="identity")
+      df_order$Etudiant.p <- df_order$Etudiant+max(df_order$Etudiant)*0.03
+      plot <- ggplot(df_order,aes(x=Discipline))+geom_histogram(aes(y=Etudiant),stat="identity")+xlab("Disciplines")+ylab("Postes pourvus")
+      plot <- plot + geom_text(aes(y=Etudiant.p,label=Etudiant),color="black")
     }
     
     if(input$Choix.indic=="pourcent"){
@@ -301,7 +306,7 @@ shinyServer(function(input,output){
       }
       rownames(Pourcent_Pourvu)[length(Pourcent_Pourvu[,1])] <-"Tot"
 
-      df_order<-data.frame(Discipline=colnames(Pourcent_Pourvu), Pourcentage=unlist(Pourcent_Pourvu[which(Offre_vec_ville == input$Ville),,drop=TRUE])*100)
+      df_order <- data.frame(Discipline=colnames(Pourcent_Pourvu), Pourcentage=unlist(Pourcent_Pourvu[which(Offre_vec_ville == input$Ville),,drop=TRUE])*100)
       df_order <- df_order[order(df_order[,2],decreasing=TRUE),]
       df_order[,1] <- factor(df_order[,1], levels = df_order[,1])
       if(length(which(is.na(df_order[,2])))==0) {
@@ -310,7 +315,37 @@ shinyServer(function(input,output){
       }
       col <- rep("black", length(df_order[,1]))
       col[which(df_order[,1]=="Tot")] <- "red"
-      plot <- ggplot(df_order,aes(x=Discipline))+geom_histogram(aes(y=Pourcentage),stat="identity",fill=col, col="white")
+      df_order$Pourcentage.p <- df_order$Pourcentage+max(df_order$Pourcentage)*0.03
+      plot <- ggplot(df_order,aes(x=Discipline))+geom_histogram(aes(y=Pourcentage),stat="identity",fill=col, col="white")+xlab("Disciplines")
+      plot <- plot + geom_text(aes(y=Pourcentage.p,label=paste0(round(Pourcentage,1),"%")),color="black")
+    }
+    
+    if(input$Choix.indic=="offre"){
+      datad <- unlist(Offre_data[which(Offre_vec_ville==input$Ville),-length(Offre_data[1,]),drop=TRUE])
+      datad[which(is.na(datad))] <- 0
+      df <- data.frame(Spe=Offre_vec_spe[-length(Offre_vec_spe)], Offre=datad)
+      df <- df[order(df[,2],decreasing=TRUE),]
+      df$Offre.p <- df$Offre + max(df$Offre)*0.03
+      df$xlab_spe <- NA
+      for(i in 1:30){
+        df$xlab_spe[i] <- xlab_spe[which(indic_spe==df$Spe[i])]
+      }
+      df[,4] <- factor(df[,4], levels = df[,4])
+      xh <- df[1,2]
+      tot <- unlist(Offre_data[which(Offre_vec_ville==input$Ville),length(Offre_data[1,]),drop=TRUE])
+      tot <- paste("Total : ", as.character(tot))
+      dftot <- data.frame(tot=tot, xh=xh)
+      plot <- ggplot(df,aes(x=xlab_spe))+
+        geom_histogram(aes(y=Offre),stat="identity")+
+        geom_text(aes(y=Offre.p,label=Offre),size=5,color="black")+
+        geom_text(data=dftot, aes(x=27, y=xh,label=tot),size= 6)+
+        xlab("Disciplines")
+    }
+    if(input$Ville==0){
+      plot <- plot + ggtitle(as.character("Toutes les subdivisions"))
+    } else {
+      titre <- as.character(ECN_data[which(ville.vec==input$Ville),7][1])
+      plot <- plot + ggtitle(titre)
     }
     print(plot)
   })
@@ -330,9 +365,11 @@ shinyServer(function(input,output){
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     df_offre.comp <- data.frame(ECN_data.dum[min:max,4],spe.vec[min:max],ville.vec[min:max])
 
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
     Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
     Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
+    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
+    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
+    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
     
     if(input$Choix.indic=="abs"){
@@ -345,7 +382,9 @@ shinyServer(function(input,output){
       df_order <- data.frame(Subdivision = c(as.character(df_order.dum$Subdivision),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
       df_order <- df_order[order(df_order[,2],decreasing=TRUE),]
       df_order[,1] <- factor(df_order[,1], levels = df_order[,1])
-      plot <- ggplot(df_order,aes(x=Subdivision))+geom_histogram(aes(y=Etudiant),stat="identity")
+      df_order$Etudiant.p <- df_order$Etudiant+max(df_order$Etudiant)*0.03
+      plot <- ggplot(df_order,aes(x=Subdivision))+geom_histogram(aes(y=Etudiant),stat="identity")+xlab("Subdivisions")+ylab("Postes pourvus")
+      plot <- plot + geom_text(aes(y=Etudiant.p,label=Etudiant),color="black")
     }
     
     if(input$Choix.indic=="pourcent"){
@@ -407,7 +446,38 @@ shinyServer(function(input,output){
       }
       col <- rep("black", length(df_order[,1]))
       col[which(df_order[,1]=="Tot")] <- "red"
-      plot <- ggplot(df_order,aes(x=Subdivision))+geom_histogram(aes(y=Pourcentage),stat="identity", fill=col, col="white")
+      df_order$Pourcentage.p <- df_order$Pourcentage+max(df_order$Pourcentage)*0.03
+      plot <- ggplot(df_order,aes(x=Subdivision))+geom_histogram(aes(y=Pourcentage),stat="identity", fill=col, col="white")+xlab("Subdivisions")
+      plot <- plot + geom_text(aes(y=Pourcentage.p,label=paste0(round(Pourcentage,1),"%")),color="black")
+    }
+    
+    if(input$Choix.indic=="offre"){
+      datad <- unlist(Offre_data[-length(Offre_data[,1]),which(Offre_vec_spe==input$Spe),drop=TRUE])
+      datad[which(is.na(datad))] <- 0
+      df <- data.frame(Subdivision=Offre_vec_ville[-length(Offre_vec_ville)], Offre=datad)
+      df <- df[order(df[,2],decreasing=TRUE),]
+      df$Offre.p <- df$Offre + max(df$Offre)*0.03
+      df$xlab_ville <- NA
+      for(i in 1:28){
+        df$xlab_ville[i] <- xlab_ville[which(indic_ville==df$Subdivision[i])]
+      }
+      df[,4] <- factor(df[,4], levels = df[,4])
+      xh <- df[1,2]
+      tot <- Offre_data[length(Offre_data[,1]),which(Offre_vec_spe==input$Spe)]
+      tot <- paste("Total : ", as.character(tot))
+      dftot <- data.frame(tot=tot, xh=xh)
+      plot <- ggplot(df,aes(x=xlab_ville))+
+        geom_histogram(aes(y=Offre),stat="identity")+
+        geom_text(aes(y=Offre.p,label=Offre),size=5,color="black")+
+        geom_text(data=dftot, aes(x=25, y=xh,label=tot),size= 6)+
+        xlab("Subdivisions")
+    }
+    
+    if(input$Spe==0){
+      plot <- plot + ggtitle(as.character("Toutes les spécialités"))
+    } else {
+      titre <- as.character(ECN_data[which(spe.vec==input$Spe),8][1])
+      plot <- plot + ggtitle(titre)
     }
     print(plot)
   })
@@ -509,7 +579,15 @@ shinyServer(function(input,output){
     } else {}
     df_order <- df_order[order(df_order[,3],decreasing=TRUE),]
     df_order[,2] <- factor(df_order[,2], levels = df_order[,2])
+    df_order$Attr.p <- df_order$Attr + max(df_order$Attr)*0.03
     plot <- ggplot(df_order,aes(x=xlab_ville))+geom_histogram(aes(y=Attr),stat="identity")+xlab("Subdivision")+ylab("Attractivité")
+    plot <- plot + geom_text(aes(y=Attr.p,label=round(Attr,1)),color="black")
+    if(input$Spe==0){
+      plot <- plot + ggtitle(as.character("Toutes les spécialités"))
+    } else {
+      titre <- as.character(ECN_data[which(spe.vec==input$Spe),8][1])
+      plot <- plot + ggtitle(titre)
+    }
     print(plot)
   })
   
@@ -611,7 +689,15 @@ shinyServer(function(input,output){
     } else {}
     df_order <- df_order[order(df_order[,3],decreasing=TRUE),]
     df_order[,2] <- factor(df_order[,2], levels = df_order[,2])
-    plot <- ggplot(df_order,aes(x=xlab_spe))+geom_histogram(aes(y=Attr),stat="identity")+xlab("Spécialité")+ylab("Attractivité")
+    df_order$Attr.p <- df_order$Attr + max(df_order$Attr)*0.03
+    plot <- ggplot(df_order,aes(x=xlab_spe))+geom_histogram(aes(y=Attr),stat="identity")+xlab("Disciplines")+ylab("Attractivité")
+    plot <- plot + geom_text(aes(y=Attr.p,label=round(Attr,1)),color="black")
+    if(input$Ville==0){
+      plot <- plot + ggtitle(as.character("Toutes les subdivisions"))
+    } else {
+      titre <- as.character(ECN_data[which(ville.vec==input$Ville),7][1])
+      plot <- plot + ggtitle(titre)
+    }
     print(plot)
   })
   
