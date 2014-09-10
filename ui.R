@@ -1,5 +1,7 @@
 library(shiny)
 
+tags$head(includeScript("google-analytics.js"))
+
 shinyUI(fluidPage(theme = "bootstrap.css",
   h3("Le suivi des choix post-ECN en direct !"),
   h5("L'application peut bloquer de temps à autre, ne pas hésiter à rafraîchir, à rééssayer à 10 minutes d'intervalle."),
@@ -95,8 +97,10 @@ shinyUI(fluidPage(theme = "bootstrap.css",
   hr(),
               
   p("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
+
+  p(textOutput("sim1"), inline=TRUE),
   
-  p(textOutput("sim"), inline=TRUE),
+  p(textOutput("sim2"), inline=TRUE),
 
   br(),
   

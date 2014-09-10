@@ -5,7 +5,7 @@ library(plyr)
 library(ggplot2)
 library(stringr)
 
-Offre_data <- read.csv("http://www.adgui.eu/woprcontent/uploads/2014/08/Offre_data.csv",fileEncoding = "UTF-8")
+Offre_data <- read.csv("./data/Offre_data.csv",fileEncoding = "UTF-8")
 
 shinyServer(function(input,output){
 
@@ -51,7 +51,27 @@ shinyServer(function(input,output){
     return(date)
   })
   
-  output$sim <- renderText({
+  output$sim1 <- renderText({
+    ECN_data <- dataset()
+    ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
+    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
+    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
+    str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
+    nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
+    texte1 <- paste("Sur les", length(ECN_data[,1]),
+      "étudiants ayant passé les ECN :",
+      nbr.t,
+      "passent par les simulations classiques,",
+      length(ECN_data[which(as.factor(ECN_data[,3])=="CESP"),1]),
+      "passent par les simulations CESP,",
+      length(ECN_data[which(as.factor(ECN_data[,1])=="ESSA"),1]),
+      "sont des étudiants des armées et",
+      length(ECN_data[which(as.factor(ECN_data[,1])=="invalidé"),1]),
+      "redoublent")
+    return(texte1)
+  })
+  
+  output$sim2 <- renderText({
     ECN_data <- dataset()
     ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
     ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
@@ -60,14 +80,14 @@ shinyServer(function(input,output){
     nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
     aff <- length(which(as.factor(ECN_data.dum[,1])=="affecté"))
     aff.p <- round(aff/nbr.t,2)*100
-    sim <- (length(which(str=="Di"))+length(which(str=="Sp")))
+    sim <- (length(which(str=="Di"))+length(which(str=="Sp")))-aff
     sim.p <- round(sim/nbr.t,2)*100
     rie <- length(which(str=="ca"))
     rie.p <- round(rie/nbr.t,2)*100
     mal <- length(which(str=="ma"))
     mal.p <- round(mal/nbr.t,2)*100
-    texte <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
-    return(texte)
+    texte2 <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
+    return(texte2)
   })
   
   output$h <- renderText({
