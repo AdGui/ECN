@@ -29,6 +29,10 @@ shinyServer(function(input,output){
       ECN_data[,4] <- gsub(pattern=" \\)",replacement="",gsub(pattern="\\d* \\( ",replacement="",ECN_data[,4]))
       ECN_data
     })
+    #pre<-read.csv("./data/prechoix.csv",sep=";",encoding="UTF-8")
+    #row.names(pre) <- pre[,1]
+    #pre <- pre[,-1]
+    #ECN_data <- pre
     return(ECN_data)
   })
   
@@ -155,6 +159,7 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    ECN_data.dum[,8] <- as.character(ECN_data.dum[,8])
     ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
     ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe)
@@ -197,9 +202,9 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    ECN_data.dum[,7] <- as.character(ECN_data.dum[,7])
     ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-    
     ECN_data.dum[,7] <- mapvalues(ECN_data.dum[,7],from=levels(ECN_data.dum[,7]),to=xlab_ville)
     df_order <- ddply(ECN_data.dum, .(Subdivision), summarize, 
                       median=median(Etudiant,na.rm=T),
@@ -725,7 +730,8 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
-    ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
+    ECN_data.dum[,8] <- as.character(ECN_data.dum[,8])
+    ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])    
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
     df_corr_spe <- data.frame(levels(ECN_data.dum[,8]),xlab_spe)
     ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe)
@@ -744,6 +750,7 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    ECN_data.dum[,7] <- as.character(ECN_data.dum[,7])
     ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
     df_corr_ville <- data.frame(levels(ECN_data.dum[,7]),xlab_ville)
