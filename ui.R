@@ -127,9 +127,9 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       dataTableOutput("agreg_ville")
     ),
                     
-    tabPanel(h4("Graphiques 1"),
+    tabPanel(h4("Distributions"),
       fluidRow(
-        column(2,h4("Options graphiques 1 : ")),
+        column(2,h4("Options des graphiques  : ")),
          
         column(5,
           selectInput(inputId = "meth.order",
@@ -154,9 +154,9 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       plotOutput("plot_ville")
     ),
                     
-    tabPanel(h4("Graphiques 2"),
+    tabPanel(h4("Postes pourvus"),
       fluidRow(
-        column(2,h4("Options graphiques 2 : ")),
+        column(2,h4("Options des graphiques : ")),
                
         column(3,
           radioButtons(inputId="Choix.indic", 
@@ -213,9 +213,9 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       plotOutput("plot_sel_ville")
     ),
     
-    tabPanel(h4("Graphiques 3"),
+    tabPanel(h4("Attractivités"),
       fluidRow(
-        column(2,h4("Options graphiques 3 : ")),
+        column(2,h4("Options des graphiques : ")),
                
         column(6,
           radioButtons(inputId="Choix.calc", 
