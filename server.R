@@ -783,7 +783,7 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
-    ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
+    ECN_data.dum[,8] <- as.factor(as.character(ECN_data.dum[,8]))
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
     df_corr_spe <- data.frame(Discipline=levels(ECN_data.dum[,8]),Abbréviation=xlab_spe)
     df_corr_spe
@@ -793,7 +793,7 @@ shinyServer(function(input,output){
     ECN_data <- dataset()
     xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
-    ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
+    ECN_data.dum[,7] <- as.factor(as.character(ECN_data.dum[,7]))
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
     df_corr_ville <- data.frame(Subdivision=levels(ECN_data.dum[,7]),Abbréviation=xlab_ville)
     df_corr_ville
