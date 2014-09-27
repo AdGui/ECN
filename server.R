@@ -282,7 +282,7 @@ shinyServer(function(input,output){
       ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
       if(input$Ville == 0) {ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]} else {ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]}
-      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(as.factor(ECN_data[-which(ECN_data[,11]==""), ][,8])),to=xlab_spe)
+      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8]))),to=xlab_spe)
       df_order.dum <- ddply(ECN_data.dum, .(Discipline), summarize, median=length(Etudiant))
       vec0 <- xlab_spe[-which(xlab_spe %in% df_order.dum$Discipline)]
       df_order <- data.frame(Discipline = c(as.character(df_order.dum$Discipline),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
@@ -414,7 +414,7 @@ shinyServer(function(input,output){
       ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
       if(input$Spe == 0) {ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]} else {ECN_data.dum <- ECN_data.dum[which(spe.vec[min:max] == input$Spe),]}
-      ECN_data.dum[,7] <- mapvalues(ECN_data.dum[,7],from=levels(as.factor(ECN_data[-which(ECN_data[,11]==""), ][,7])),to=xlab_ville)
+      ECN_data.dum[,7] <- mapvalues(ECN_data.dum[,7],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,7]))),to=xlab_ville)
       df_order.dum <- ddply(ECN_data.dum, .(Subdivision), summarize, median=length(Etudiant))
       vec0 <- xlab_ville[-which(xlab_ville %in% df_order.dum$Subdivision)]
       df_order <- data.frame(Subdivision = c(as.character(df_order.dum$Subdivision),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
