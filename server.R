@@ -13,47 +13,60 @@ shinyServer(function(input,output){
   Offre_data <- Offre_data[,-1]
   
   dataset <- reactive({
-    input$runButton
-    ECN_data <- isolate({
-      ECN <- getURL("https://www.cngsante.fr/chiron2014/celine/listing.html", ssl.verifypeer = FALSE, .encoding="UTF-8")
-      ECN_data.dum <- readHTMLTable(ECN,stringsAsFactors = FALSE)
-      ECN_data <- ECN_data.dum[[1]]
-      rm(ECN_data.dum)
-      rm(ECN)
-      colnames(ECN_data) <- ECN_data[9,]
-      colnames(ECN_data)[5] <-"Voeu"
-      colnames(ECN_data)[9] <-"Désir (non officiel)" 
-      ECN_data <- ECN_data[-c(1:9),]
-      ECN_data <- ECN_data[-which(ECN_data[,1]=="testeur"),]
-      ECN_data <- ECN_data[-which(ECN_data[,1]=="déclassé"),]
-      ECN_data[,4] <- gsub(pattern=" \\)",replacement="",gsub(pattern="\\d* \\( ",replacement="",ECN_data[,4]))
-      ECN_data
-    })
-    #pre<-read.csv("./data/prechoix.csv",sep=";",encoding="UTF-8")
-    #row.names(pre) <- pre[,1]
-    #pre <- pre[,-1]
-    #ECN_data <- pre
-    return(ECN_data)
+    if(input$Choix.BDD=="simulations2014"){
+      con <- file("./data/ECN2014_simulations.prn",encoding="UTF-8")
+    }
+    if(input$Choix.BDD=="affectations2014"){
+      con <- file("./data/ECN2014_affectations.prn",encoding="UTF-8")
+    }
+    ECN_data <- read.csv(con, sep=",")
+    colnames(ECN_data)[10] <-"Désir (non officiel)" 
+    ECN_data <- ECN_data[,-1]
+    ECN_data
   })
   
-  actu <- reactive({
-    ECN <- getURL("https://www.cngsante.fr/chiron2014/celine/listing.html", ssl.verifypeer = FALSE, .encoding="UTF-8")
-    input$runButton
-    date <- isolate({
-      date <- substr(substr(ECN, start=8374, stop=8400),start=14,stop=20)
-      h <- substr(substr(ECN, start=8374, stop=8400),start=1,stop=5)
-      dateh <- paste(h, date)
-      return(dateh)
-    })
-    return(date)
-  })
+#  dataset <- reactive({
+#    input$runButton
+#    ECN_data <- isolate({
+#      ECN <- getURL("https://www.cngsante.fr/chiron2014/celine/listing.html", ssl.verifypeer = FALSE, .encoding="UTF-8")
+#      ECN_data.dum <- readHTMLTable(ECN,stringsAsFactors = FALSE)
+#      ECN_data <- ECN_data.dum[[1]]
+#      rm(ECN_data.dum)
+#      rm(ECN)
+#      colnames(ECN_data) <- ECN_data[9,]
+#      colnames(ECN_data)[5] <-"Voeu"
+#      colnames(ECN_data)[9] <-"Désir (non officiel)" 
+#      ECN_data <- ECN_data[-c(1:9),]
+#      ECN_data <- ECN_data[-which(ECN_data[,1]=="testeur"),]
+#      ECN_data <- ECN_data[-which(ECN_data[,1]=="déclassé"),]
+#      ECN_data[,4] <- gsub(pattern=" \\)",replacement="",gsub(pattern="\\d* \\( ",replacement="",ECN_data[,4]))
+#      ECN_data
+#    })
+#    #pre<-read.csv("./data/prechoix.csv",sep=";",encoding="UTF-8")
+#    #row.names(pre) <- pre[,1]
+#    #pre <- pre[,-1]
+#    #ECN_data <- pre
+#    return(ECN_data)
+#  })
+  
+#  actu <- reactive({
+#    ECN <- getURL("https://www.cngsante.fr/chiron2014/celine/listing.html", ssl.verifypeer = FALSE, .encoding="UTF-8")
+#    input$runButton
+#    date <- isolate({
+#      date <- substr(substr(ECN, start=8374, stop=8400),start=14,stop=20)
+#      h <- substr(substr(ECN, start=8374, stop=8400),start=1,stop=5)
+#      dateh <- paste(h, date)
+#      return(dateh)
+#    })
+#    return(date)
+#  })
 
   
-  output$date <- renderText({
-    dateh <- actu()
-    date <- substr(dateh, start=7,stop=13)
-    return(date)
-  })
+#  output$date <- renderText({
+#    dateh <- actu()
+#    date <- substr(dateh, start=7,stop=13)
+#    return(date)
+#  })
   
   output$sim1 <- renderText({
     ECN_data <- dataset()
@@ -65,40 +78,40 @@ shinyServer(function(input,output){
     texte1 <- paste("Sur les", length(ECN_data[,1]),
       "étudiants ayant passé les ECN :",
       nbr.t,
-      "passent par les simulations classiques,",
+      "sont passés par les simulations classiques,",
       length(ECN_data[which(as.factor(ECN_data[,3])=="CESP"),1]),
-      "passent par les simulations CESP,",
+      "sont passés par les simulations CESP,",
       length(ECN_data[which(as.factor(ECN_data[,1])=="ESSA"),1]),
-      "sont des étudiants des armées et",
+      "étaient des étudiants des armées et",
       length(ECN_data[which(as.factor(ECN_data[,1])=="invalidé"),1]),
-      "redoublent")
+      "ont redoublé")
     return(texte1)
   })
   
-  output$sim2 <- renderText({
-    ECN_data <- dataset()
-    ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
-    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
-    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
-    str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
-    nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
-    aff <- length(which(as.factor(ECN_data.dum[,1])=="affecté"))
-    aff.p <- round(aff/nbr.t,2)*100
-    sim <- (length(which(str=="Di"))+length(which(str=="Sp")))-aff
-    sim.p <- round(sim/nbr.t,2)*100
-    rie <- length(which(str=="ca"))
-    rie.p <- round(rie/nbr.t,2)*100
-    mal <- length(which(str=="ma"))
-    mal.p <- round(mal/nbr.t,2)*100
-    texte2 <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
-    return(texte2)
-  })
+##  output$sim2 <- renderText({
+#    ECN_data <- dataset()
+#    ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
+#    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
+#    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
+#    str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
+#    nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
+#    aff <- length(which(as.factor(ECN_data.dum[,1])=="affecté"))
+#    aff.p <- round(aff/nbr.t,2)*100
+#    sim <- (length(which(str=="Di"))+length(which(str=="Sp")))-aff
+#    sim.p <- round(sim/nbr.t,2)*100
+#    rie <- length(which(str=="ca"))
+#    rie.p <- round(rie/nbr.t,2)*100
+#    mal <- length(which(str=="ma"))
+#    mal.p <- round(mal/nbr.t,2)*100
+#    texte2 <- paste("Avancement des choix :", aff,"affectés (",aff.p,"%),",sim,"simulés (",sim.p,"%),", mal ,"non simulés malgré un ou plusieurs voeux (", mal.p,"%),", rie ,"non simulés car aucun choix (", rie.p,"%).")
+#    return(texte2)
+#  })
   
-  output$h <- renderText({
-     dateh <- actu()
-     h <- substr(dateh, start=1,stop=5)
-     return(h)
-  })
+#  output$h <- renderText({
+#     dateh <- actu()
+#     h <- substr(dateh, start=1,stop=5)
+#     return(h)
+#  })
   
   output$table <- renderDataTable({
     ECN_data <- dataset()

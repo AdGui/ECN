@@ -1,10 +1,10 @@
 library(shiny)
 
-tags$head(includeScript("google-analytics.js"))
 
 shinyUI(fluidPage(theme = "bootstrap.css",
-  h3("Le suivi des choix post-ECN en direct !"),
-  h5("L'application peut bloquer de temps à autre, ne pas hésiter à rafraîchir, à rééssayer à 10 minutes d'intervalle."),
+  tags$head(includeScript("google-analytics.js")),
+  h3("Analyse des choix post-ECN"),
+#  h5("L'application peut bloquer de temps à autre, ne pas hésiter à rafraîchir, à rééssayer à 10 minutes d'intervalle."),
   br(),
   fluidRow(
     column(2,h4("Options globales :")),
@@ -87,22 +87,33 @@ shinyUI(fluidPage(theme = "bootstrap.css",
   ),
                 
   br(),
-  
+
   fluidRow(
-    column(2, offset=5,
-    actionButton("runButton", h4("Actualisation"))
+    column(2,h4("Base de données utilisée : ")),
+    
+    column(9,
+      radioButtons(inputId = "Choix.BDD", 
+        label = "",
+        choices = list("01/09/2014 (simulations)"="simulations2014","27/09/2014 (affectations)"="affectations2014"),
+        selected = "affectations2014", inline = TRUE
+      )
     )
   ),
+#  fluidRow(
+#    column(2, offset=5,
+#    actionButton("runButton", h4("Actualisation"))
+#    )
+#  ),
                   
   hr(),
               
-  p("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
+#  p("Temps de chargement : ~20s. Données actualisées du ", textOutput("date",inline = TRUE), " à ",textOutput("h",inline = TRUE), "."),
 
   p(textOutput("sim1"), inline=TRUE),
   
-  p(textOutput("sim2"), inline=TRUE),
+#  p(textOutput("sim2"), inline=TRUE),
 
-  br(),
+#  br(),
   
   tabsetPanel(
     tabPanel(h4("Données brutes"), 
