@@ -7,21 +7,72 @@ library(stringr)
 
 Offre_data <- read.csv("./data/Offre_data.csv",fileEncoding = "UTF-8")
 
+Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
+Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
+xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
+indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
+xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
+xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
+#xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Ped","Psy","SP","ChG","ChOr","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Nep","Neu","Onc","Pne","Rad","Rhu")
+indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
+
 shinyServer(function(input,output){
 
   row.names(Offre_data) <- Offre_data[,1]
   Offre_data <- Offre_data[,-1]
   
   dataset <- reactive({
-    if(input$Choix.BDD=="simulations2014"){
+    if(input$ChoixBDD == "simulations2014"){
       con <- file("./data/ECN2014_simulations.prn",encoding="UTF-8")
     }
-    if(input$Choix.BDD=="affectations2014"){
+    if(input$ChoixBDD == "affectations2014"){
       con <- file("./data/ECN2014_affectations.prn",encoding="UTF-8")
     }
+    if(input$ChoixBDD == "affectations2010"){
+      con <- file("./data/ECN2010.csv")
+    }
+    if(input$ChoixBDD == "affectations2011"){
+      con <- file("./data/ECN2011.csv")
+    }
+    if(input$ChoixBDD == "affectations2012"){
+      con <- file("./data/ECN2012.csv")
+    }
+    if(input$ChoixBDD == "affectations2013"){
+      con <- file("./data/ECN2013.csv")
+    }
     ECN_data <- read.csv(con, sep=",")
-    colnames(ECN_data)[10] <-"Désir (non officiel)" 
-    ECN_data <- ECN_data[,-1]
+    
+    vec.spe <- c()
+    vec.sub <- c()
+    
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+      ECN_data <- ECN_data[,-1]
+    } else {
+      for(i in 1:length(ECN_data[,1])){
+        vec.sub[i] <- indic_ville[which(xlab_ville==ECN_data[i,9])]
+        vec.spe[i] <- indic_spe[which(xlab_spe==ECN_data[i,10])]
+      }
+      vec.sub <- as.character(vec.sub)
+      vec.spe <- as.character(vec.spe)
+      for(i in 1:length(vec.sub)){
+        if(nchar(vec.sub[i])==2){
+          vec.sub[i] <- paste0("0",vec.sub[i])
+        }
+        if(nchar(vec.sub[i])==1){
+          vec.sub[i] <- paste0("00",vec.sub[i])
+        }
+      }
+      for(i in 1:length(vec.spe)){
+        if(nchar(vec.spe[i])==2){
+          vec.spe[i] <- paste0("0",vec.spe[i])
+        }
+        if(nchar(vec.spe[i])==1){
+          vec.spe[i] <- paste0("00",vec.spe[i])
+        }
+      }        
+      ECN_data <- data.frame("sexe"=ECN_data[,4],"ddm"=ECN_data[,6],"dda"=ECN_data[,7],"Etudiant"=ECN_data[,8],"v5"=1,"v6"=1,"Subdivision"=ECN_data[,9],"Discipline"=ECN_data[,10],"v9"=1,"v10"=1,"SubDis"=paste0("[",vec.sub,vec.spe,"]"))
+    }
+    colnames(ECN_data)[9] <-"Désir (non officiel)"
     ECN_data
   })
   
@@ -69,23 +120,29 @@ shinyServer(function(input,output){
 #  })
   
   output$sim1 <- renderText({
-    ECN_data <- dataset()
-    ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
-    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
-    ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
-    str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
-    nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
-    texte1 <- paste("Sur les", length(ECN_data[,1]),
-      "étudiants ayant passé les ECN :",
-      nbr.t,
-      "sont passés par les simulations classiques,",
-      length(ECN_data[which(as.factor(ECN_data[,3])=="CESP"),1]),
-      "sont passés par les simulations CESP,",
-      length(ECN_data[which(as.factor(ECN_data[,1])=="ESSA"),1]),
-      "étaient des étudiants des armées et",
-      length(ECN_data[which(as.factor(ECN_data[,1])=="invalidé"),1]),
-      "ont redoublé")
-    return(texte1)
+    if(input$ChoixBDD=="simulations2014" || input$ChoixBDD=="affectations2014"){
+      ECN_data <- dataset()
+      ECN_data.dum<-ECN_data[-which(as.factor(ECN_data[,3])=="CESP"),]
+      ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="ESSA"),]
+      ECN_data.dum<-ECN_data.dum[-which(as.factor(ECN_data.dum[,1])=="invalidé"),]
+      str <- substr(as.factor(ECN_data.dum[,8]),start=1,stop=2)
+      nbr.t <- length(which(str=="Di"))+length(which(str=="ca"))+length(which(str=="ma"))+length(which(str=="Sp"))
+      texte1 <- paste("Sur les", length(ECN_data[,1]),
+        "étudiants ayant passé les ECN :",
+        nbr.t,
+        "sont passés par les simulations classiques,",
+        length(ECN_data[which(as.factor(ECN_data[,3])=="CESP"),1]),
+        "sont passés par les simulations CESP,",
+        length(ECN_data[which(as.factor(ECN_data[,1])=="ESSA"),1]),
+        "étaient des étudiants des armées et",
+        length(ECN_data[which(as.factor(ECN_data[,1])=="invalidé"),1]),
+        "ont redoublé")
+      return(texte1)
+    } else {
+      ECN_data <- dataset()
+      texte1 <- paste0("Pour cette année ", length(ECN_data[,1])," étudiants ont été affectés suite aux ECN (", max(ECN_data$Etudiant, na.rm=T)," ont passés les ECN).")
+      return(texte1)                
+    }
   })
   
 ##  output$sim2 <- renderText({
@@ -115,10 +172,10 @@ shinyServer(function(input,output){
   
   output$table <- renderDataTable({
     ECN_data <- dataset()
-    ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
-    spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
-    ECN_data[,8] <- as.factor(ECN_data[,8])
-    ECN_data[,7] <- as.factor(ECN_data[,7])
+    ville.vec <- as.numeric(substr(ECN_data[,11],start=2,stop=4))
+    spe.vec <- as.numeric(substr(ECN_data[,11],start=5,stop=7))
+    #ECN_data[,8] <- as.factor(ECN_data[,8])
+    #ECN_data[,7] <- as.factor(ECN_data[,7])
     ECN_data[,4] <- as.numeric(ECN_data[,4])
     if(input$Ville != 0){
       if(input$Spe != 0){
@@ -157,7 +214,6 @@ shinyServer(function(input,output){
           df<-data.frame(v1="pas de candidat pour cette combinaison")
         } else {
           df<-ECN_comb
-          
         }
       }
     }
@@ -165,17 +221,31 @@ shinyServer(function(input,output){
       colnames(df) <- colnames(ECN_data)
       rownames(df) <- 1:length(df[,1])
     } else {}
+    if(input$ChoixBDD=="simulations2014" || input$ChoixBDD=="affectations2014"){} else {
+      df <- df[,-c(5,6,9,10)]
+      if(length(dim(df)[2])!=0){
+        colnames(df) <- c("Sexe","Mois de naissance","Année de naissance","Rang","Subdivision","Spécialité","SubDis")
+      } else {
+        df<-data.frame(v1="pas de candidat pour cette combinaison")
+      }
+    }
     df
   })
   
   output$plot_spe <- renderPlot({
     ECN_data <- dataset()
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-    ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+      ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    } else {
+      ECN_data.dum <- ECN_data
+    }
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){} else {
+      xlab_spe.2 <- sort(xlab_spe.2)
+    }
     ECN_data.dum[,8] <- as.character(ECN_data.dum[,8])
     ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-    ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe)
+    ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe.2)
     df_order <- ddply(ECN_data.dum, .(Discipline), summarize, 
                       median=median(Etudiant,na.rm=T),
                       mean=mean(Etudiant,na.rm=T),
@@ -186,22 +256,22 @@ shinyServer(function(input,output){
     )
     
     if(input$meth.order=="median"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$median)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$median)])
     }
     if(input$meth.order=="mean"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$mean)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$mean)])
     }
     if(input$meth.order=="max"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$max)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$max)])
     }
     if(input$meth.order=="min"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$min)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$min)])
     }
     if(input$meth.order=="TQ"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$TQuart)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$TQuart)])
     }
     if(input$meth.order=="PQ"){
-      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe[order(df_order$PQuart)])
+      ECN_data.dum[,8] <- factor(ECN_data.dum[,8], levels = xlab_spe.2[order(df_order$PQuart)])
     }
     
     plot <- ggplot(ECN_data.dum, aes(x=Discipline,y=Etudiant))+
@@ -213,8 +283,11 @@ shinyServer(function(input,output){
   
   output$plot_ville <- renderPlot({
     ECN_data <- dataset()
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+      ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    } else {
+      ECN_data.dum <- ECN_data
+    }
     ECN_data.dum[,7] <- as.character(ECN_data.dum[,7])
     ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
@@ -271,20 +344,13 @@ shinyServer(function(input,output){
     ville.vec <- as.numeric(substr(ECN_data[,11],start=2,stop=4))
     df_offre.comp <- data.frame(ECN_data.dum[min:max,4],spe.vec[min:max],ville.vec[min:max])
 
-    Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
-    Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-    indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
-  
-    if(input$Choix.indic=="abs"){
+   if(input$Choix.indic=="abs"){
       ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
       if(input$Ville == 0) {ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]} else {ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]}
-      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8]))),to=xlab_spe)
+      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8]))),to=xlab_spe.2)
       df_order.dum <- ddply(ECN_data.dum, .(Discipline), summarize, median=length(Etudiant))
-      vec0 <- xlab_spe[-which(xlab_spe %in% df_order.dum$Discipline)]
+      vec0 <- xlab_spe.2[-which(xlab_spe.2 %in% df_order.dum$Discipline)]
       df_order <- data.frame(Discipline = c(as.character(df_order.dum$Discipline),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
       df_order <- df_order[order(df_order[,2],decreasing=TRUE),]
       df_order[,1] <- factor(df_order[,1], levels = df_order[,1])
@@ -316,7 +382,7 @@ shinyServer(function(input,output){
       for(i in 1:(dim(Pourvu)[2])){
         Pourvu[dim(Pourvu)[1],i] <- sum(Pourvu[1:(dim(Pourvu)[1]-1),i])
       }
-      #Pourcentage
+
       Pourcent_Pourvu <- c()
       Pourcent_Pourvu <- as.data.frame(Pourcent_Pourvu)
       for( i in 1:length(Pourvu[,1])){
@@ -325,20 +391,11 @@ shinyServer(function(input,output){
         }
       }
       
-      #Arrangements des données
-      indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
-      xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-      
-      #xlab_spe[which(indic_spe==Offre_vec_spe[1])]
       for(i in 1:length(indic_spe)){
         colnames(Pourcent_Pourvu)[i] <- xlab_spe[which(indic_spe==Offre_vec_spe[i])]
       }
       colnames(Pourcent_Pourvu)[length(Pourcent_Pourvu[1,])] <-"Tot"
       
-      xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-      indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
-      
-      #xlab_ville[which(indic_ville==Offre_vec_ville[1])]
       for(i in 1:length(indic_ville)){
         rownames(Pourcent_Pourvu)[i] <- xlab_ville[which(indic_ville==Offre_vec_ville[i])]
       }
@@ -402,14 +459,7 @@ shinyServer(function(input,output){
     spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     df_offre.comp <- data.frame(ECN_data.dum[min:max,4],spe.vec[min:max],ville.vec[min:max])
-
-    Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
-    Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-    indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
-    
+   
     if(input$Choix.indic=="abs"){
       ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
@@ -448,7 +498,7 @@ shinyServer(function(input,output){
       for(i in 1:(dim(Pourvu)[2])){
         Pourvu[dim(Pourvu)[1],i] <- sum(Pourvu[1:(dim(Pourvu)[1]-1),i])
       }
-      #Pourcentage
+      
       Pourcent_Pourvu <- c()
       Pourcent_Pourvu <- as.data.frame(Pourcent_Pourvu)
       for( i in 1:length(Pourvu[,1])){
@@ -457,20 +507,11 @@ shinyServer(function(input,output){
         }
       }
       
-      #Arrangements des données
-      indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
-      xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-      
-      #xlab_spe[which(indic_spe==Offre_vec_spe[1])]
       for(i in 1:length(indic_spe)){
         colnames(Pourcent_Pourvu)[i] <- xlab_spe[which(indic_spe==Offre_vec_spe[i])]
       }
       colnames(Pourcent_Pourvu)[length(Pourcent_Pourvu[1,])] <-"Tot"
       
-      xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-      indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
-      
-      #xlab_ville[which(indic_ville==Offre_vec_ville[1])]
       for(i in 1:length(indic_ville)){
         rownames(Pourcent_Pourvu)[i] <- xlab_ville[which(indic_ville==Offre_vec_ville[i])]
       }
@@ -522,10 +563,6 @@ shinyServer(function(input,output){
   
   output$plot_attr_spe <- renderPlot({
     ECN_data <- dataset()
-    Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
-    Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
     spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     ECN_data.dum <- ECN_data
@@ -631,12 +668,6 @@ shinyServer(function(input,output){
   
   output$plot_attr_ville <- renderPlot({
     ECN_data <- dataset()
-    Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
-    Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-    indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
     spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     ECN_data.dum <- ECN_data
@@ -741,16 +772,22 @@ shinyServer(function(input,output){
   
   output$agreg_spe <- renderDataTable({
     ECN_data <- dataset()
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-    ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+      ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    } else {
+      ECN_data.dum <- ECN_data
+    }
     ECN_data.dum[,8] <- as.character(ECN_data.dum[,8])
     ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])    
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-    df_corr_spe <- data.frame(levels(ECN_data.dum[,8]),xlab_spe)
-    ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe)
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){} else {
+      xlab_spe.2 <- sort(xlab_spe.2)
+    }
+    df_corr_spe <- data.frame(levels(ECN_data.dum[,8]),xlab_spe.2)
+    ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(ECN_data.dum[,8]),to=xlab_spe.2)
     df_order <- ddply(ECN_data.dum, .(Discipline), summarize, 
-      median=median(Etudiant,na.rm=T),
-      mean=mean(Etudiant,na.rm=T),
+      median=round(median(Etudiant,na.rm=T),0),
+      mean=round(mean(Etudiant,na.rm=T),1),
       max=max(Etudiant,na.rm=T),
       min=min(Etudiant,na.rm=T),
       TQuart=quantile(Etudiant, 0.75,na.rm=T),
@@ -761,8 +798,11 @@ shinyServer(function(input,output){
   
   output$agreg_ville <- renderDataTable({
     ECN_data <- dataset()
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
-    ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+      ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
+    } else {
+      ECN_data.dum <- ECN_data
+    }
     ECN_data.dum[,7] <- as.character(ECN_data.dum[,7])
     ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
@@ -780,18 +820,20 @@ shinyServer(function(input,output){
   })
   
   output$legende_spe <- renderTable({
-    ECN_data <- dataset()
-    xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
+    con <- file("./data/ECN2014_affectations.prn",encoding="UTF-8")
+    ECN_data <- read.csv(con, sep=",")
+    ECN_data <- ECN_data[,-1]
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
     ECN_data.dum[,8] <- as.factor(as.character(ECN_data.dum[,8]))
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-    df_corr_spe <- data.frame(Discipline=levels(ECN_data.dum[,8]),Abbréviation=xlab_spe)
+    df_corr_spe <- data.frame(Discipline = levels(ECN_data.dum[,8]), Abbréviation = xlab_spe.2)
     df_corr_spe
   })
   
   output$legende_ville <- renderTable({
-    ECN_data <- dataset()
-    xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
+    con <- file("./data/ECN2014_affectations.prn",encoding="UTF-8")
+    ECN_data <- read.csv(con, sep=",")
+    ECN_data <- ECN_data[,-1]
     ECN_data.dum <- ECN_data[-which(ECN_data[,11]==""), ]
     ECN_data.dum[,7] <- as.factor(as.character(ECN_data.dum[,7]))
     ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
