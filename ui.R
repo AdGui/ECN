@@ -1,6 +1,5 @@
 library(shiny)
 
-
 shinyUI(fluidPage(theme = "bootstrap.css",
   tags$head(includeScript("google-analytics.js")),
   h3("Analyse des choix post-ECN"),
@@ -92,9 +91,9 @@ shinyUI(fluidPage(theme = "bootstrap.css",
     column(2,h4("Base de données utilisée : ")),
     
     column(9,
-      radioButtons(inputId = "Choix.BDD", 
+      radioButtons(inputId = "ChoixBDD", 
         label = "",
-        choices = list("01/09/2014 (simulations)"="simulations2014","27/09/2014 (affectations)"="affectations2014"),
+        choices = list("2010"="affectations2010","2011"="affectations2011","2012"="affectations2012","2013"="affectations2013","01/09/2014 (simulations)"="simulations2014","27/09/2014 (affectations)"="affectations2014"),
         selected = "affectations2014", inline = TRUE
       )
     )
@@ -153,8 +152,10 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       h6("Il est possible de classer les villes selon différentes méthodes"),
       plotOutput("plot_ville")
     ),
-                    
+    
     tabPanel(h4("Postes pourvus"),
+      conditionalPanel(
+      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'",
       fluidRow(
         column(2,h4("Options des graphiques : ")),
                
@@ -212,8 +213,16 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       h6("Il est possible de restreindre par classement et par spécialité"),
       plotOutput("plot_sel_ville")
     ),
+    conditionalPanel(
+      condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014'",
+      p("En travaux, non disponible pour l'instant")
+    )
+    ),
     
     tabPanel(h4("Attractivités"),
+      conditionalPanel(
+      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'",
+               
       fluidRow(
         column(2,h4("Options des graphiques : ")),
                
@@ -243,11 +252,17 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       p("Aux postes non remplis ont été affecté le rang maximal + 1"),
       p("Le choix de la méthode de calcul fait varier le façon de classer les étudiants. Si on prend l'exemple du Xe du classement, classé premier dans sa spécialité. Avec la méthode \"globale\" son rang sera X avec la méthode \"dans\" son rang sera 1."),
       p("L'attactivité reflète donc soit la capacité à attirer les meilleurs compte-tenu du classement global, soit les meilleurs compte-tenu d'un classement spécifique (au sein d'une spécialité ou d'une subdivision).")
+    ),  
+    conditionalPanel(
+     condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014'",
+      p("En travaux, non disponible pour l'instant")
+    )
     ),
                     
     tabPanel(h4("Légendes"),
       h3("Notice",style="text-decoration:underline;"),
-      p("Les étudiants CESP comme ceux des armées ne sont pas inclus aux analyses (y compris pour l'avancement des choix)."),
+      p("Les étudiants CESP comme ceux des armées ne sont pas inclus aux analyses pour 2014 (y compris pour l'avancement des choix)."),
+      p("Pour les autres années, ils sont probablement incorporés aux résultats sans distinction possible."),
       p("L\'ensemble des données sont issues de : ", a("https://www.cngsante.fr/chiron2014/celine/listing.html", href="https://www.cngsante.fr/chiron2014/celine/listing.html")),
       h3("Légende spécialités"),
       tableOutput("legende_spe"),
