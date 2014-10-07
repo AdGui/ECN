@@ -83,21 +83,21 @@ write.csv(df.dum, file="BDD2010")
 #### corrections ####
 #### 2011
 #BDD[,1] <- as.character(BDD[,1])
-#BDD[6851,1] <- "7625 M. Barbel (Yves), né le 10 septembre 1980, médecine générale à Nancy."
-#BDD[3003,1] <- "3073 Mlle Roussille (Pauline), née le 8 juin 1987, gastro-entérologie et hépatologie à Poitiers."
+#BDD[6851,1]
+#BDD[3003,1] 
 #BDD[,1] <- as.factor(BDD[,1])
 
 #### 2010
 #ddn : start=gregexpr(pattern="\\)\\,",BDD[i,1])[[1]][1] ## + 3 ##
 #BDD[,1] <- BDD[,1] %>% as.character
-#BDD[242,1] <- "244 M. Picard (Frédéric, Pierre), 5 mars 1986, Chirurgie générale à Paris."
-#BDD[476,1] <- "479 M. Kracht (Julien, Malte, Alexandre), 27 juillet 1986, Cardiologie et maladies vasculaires à Rouen."
-#BDD[957,1] <- "966 M. Hodzic (Amir), 20 octobre 1984, Cardiologie et maladies vasculaires à Caen." 
-#BDD[1907,1] <- "1932 Mme Bruckler (Marie), 16 novembre 1986, Anesthésie-réanimation à Nantes." 
-#BDD[1908,1] <- "1933 Mme Khalifeh (Pamela), 22 mars 1986, Anesthésie-réanimation à Strasbourg."   
-#BDD[5515,1] <- "6060 Mme Rahmani (Soraya) (nom d'usage Mahoukou-Kimbembe), 9 juillet 1984, Médecine générale à Caen."
-#BDD[3836,1] <- "4020 M. Pavlovsky (Thomas), 7 mai 1986, Médecine générale aux Antilles-Guyane."
-#BDD[5217,1] <- "5693 M. Marfaing (Florent), 20 août 1984, Médecine du Travail à Lyon."
-#BDD[4528,1] <- "4840 Mme Azarkan (Noura), 10 juillet 1985, Médecine générale à Nice."
+#BDD[242,1]
+#BDD[476,1] 
+#BDD[957,1] 
+#BDD[1907,1] 
+#BDD[1908,1] 
+#BDD[5515,1] 
+#BDD[3836,1] 
+#BDD[5217,1] 
+#BDD[4528,1] 
 #BDD[,1] <- BDD[,1] %>% as.factor
 
