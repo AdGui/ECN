@@ -5,8 +5,6 @@ library(plyr)
 library(ggplot2)
 library(stringr)
 
-Offre_data <- read.csv("./data/Offre_data.csv",fileEncoding = "UTF-8")
-
 Offre_vec_ville <- c(015,020,018,016,017,019,022,024,023,021,038,025,026,027,029,032,028,030,033,031,035,034,036,037,042,040,039,041,000)
 Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 29, 30, 31, 0)
 xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
@@ -17,9 +15,20 @@ xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","C
 indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
 
 shinyServer(function(input,output){
-
-  row.names(Offre_data) <- Offre_data[,1]
-  Offre_data <- Offre_data[,-1]
+  
+  Offre <- reactive({
+    if(input$ChoixBDD %in% c("simulations2014","affectations2014")){
+      Offre_data <- read.csv("./data/Offre_2014.csv",fileEncoding = "UTF-8")
+    }
+    vec <- c()
+    if(input$ChoixBDD == "affectations2010"){
+      Offre_data <- read.csv("./data/Offre_2010.csv", fileEncoding="UTF-8")
+      Offre_data <- Offre_data[,-1]
+    }
+    row.names(Offre_data) <- Offre_data[,1]
+    Offre_data <- Offre_data[,-1]
+    Offre_data
+  })
   
   dataset <- reactive({
     if(input$ChoixBDD == "simulations2014"){
@@ -331,6 +340,7 @@ shinyServer(function(input,output){
   
   output$plot_sel_spe <- renderPlot({
     ECN_data <- dataset()
+    Offre_data <- Offre()
     if(input$Restcand == "oui"){
         min <- as.numeric(input$Rang.min)
         max <- as.numeric(input$Rang.max)
@@ -347,8 +357,17 @@ shinyServer(function(input,output){
    if(input$Choix.indic=="abs"){
       ECN_data.dum[,8] <- as.factor(ECN_data.dum[,8])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-      if(input$Ville == 0) {ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]} else {ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]}
-      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8]))),to=xlab_spe.2)
+      if(input$Ville == 0) {
+        if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+          ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]
+        }
+      } else {ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]}
+      if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+        vec.2 <- levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8])))
+      } else {
+        vec.2 <- levels(as.factor(as.character(ECN_data[,8])))
+      }
+      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=vec.2,to=xlab_spe.2)
       df_order.dum <- ddply(ECN_data.dum, .(Discipline), summarize, median=length(Etudiant))
       vec0 <- xlab_spe.2[-which(xlab_spe.2 %in% df_order.dum$Discipline)]
       df_order <- data.frame(Discipline = c(as.character(df_order.dum$Discipline),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
@@ -447,6 +466,7 @@ shinyServer(function(input,output){
   
   output$plot_sel_ville <- renderPlot({
     ECN_data <- dataset()
+    Offre_data <- Offre()
     if( input$Restcand=="oui"){
       min <- as.numeric(input$Rang.min)
       max <- as.numeric(input$Rang.max)
@@ -463,8 +483,19 @@ shinyServer(function(input,output){
     if(input$Choix.indic=="abs"){
       ECN_data.dum[,7] <- as.factor(ECN_data.dum[,7])
       ECN_data.dum[,4] <- as.numeric(ECN_data.dum[,4])
-      if(input$Spe == 0) {ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]} else {ECN_data.dum <- ECN_data.dum[which(spe.vec[min:max] == input$Spe),]}
-      ECN_data.dum[,7] <- mapvalues(ECN_data.dum[,7],from=levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,7]))),to=xlab_ville)
+      if(input$Spe == 0) {
+        if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+          ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]
+        }
+      } else {
+        ECN_data.dum <- ECN_data.dum[which(spe.vec[min:max] == input$Spe),]
+      }
+      if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+        vec.2 <- levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,7])))
+      } else {
+        vec.2 <- levels(as.factor(as.character(ECN_data[,7])))
+      }
+      ECN_data.dum[,7] <- mapvalues(ECN_data.dum[,7],from=vec.2,to=xlab_ville)
       df_order.dum <- ddply(ECN_data.dum, .(Subdivision), summarize, median=length(Etudiant))
       vec0 <- xlab_ville[-which(xlab_ville %in% df_order.dum$Subdivision)]
       df_order <- data.frame(Subdivision = c(as.character(df_order.dum$Subdivision),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
@@ -563,6 +594,7 @@ shinyServer(function(input,output){
   
   output$plot_attr_spe <- renderPlot({
     ECN_data <- dataset()
+    Offre_data <- Offre()
     spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     ECN_data.dum <- ECN_data
@@ -573,19 +605,24 @@ shinyServer(function(input,output){
       for(i in indic_ville){
         nbr.poste <- as.numeric(Offre_data[which(Offre_vec_ville==i),31])
         nbr.poste.t <- as.numeric(Offre_data[29,31])
-        if(is.na(nbr.poste)){Attracti[which(indic_ville==i)] <- NA
+        if(is.na(nbr.poste)){
+          Attracti[which(indic_ville==i)] <- NA
         } else {
-          offre.attr <- df_offre.comp[-which(ECN_data[,11]==""),1]
-          if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
-            SXmax <- 8305*nbr.poste
+          if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+            offre.attr <- df_offre.comp[-which(ECN_data[,11]==""),1]
           } else {
-            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep(8305, (nbr.poste.t - length(offre.attr)))))
+            offre.attr <- df_offre.comp[,1]
+          }          
+          if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
+            SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
+          } else {
+            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
           }
           offre.attr <- offre.attr[1:nbr.poste]
           SXmin <- sum(offre.attr)
           x <- df_offre.comp[which(df_offre.comp[,3]==i),1]
           if(length(x) != length(offre.attr)){
-            x <- c(x,rep(8305,length(offre.attr) - length(x)))
+            x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
           }
           Sx <- sum(x)
           Attracti[which(indic_ville==i)] <- (Sx - SXmin)/(SXmax-SXmin)
@@ -600,9 +637,9 @@ shinyServer(function(input,output){
           } else {
             offre.attr <- df_offre.comp[which(df_offre.comp[,2]==input$Spe),1]
             if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
-              SXmax <- 8305*nbr.poste
+              SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
             } else {
-              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep(8305, (nbr.poste.t - length(offre.attr)))))
+              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
             }
             offre.attr <- offre.attr[1:nbr.poste]
             SXmin <- sum(offre.attr)
@@ -610,7 +647,7 @@ shinyServer(function(input,output){
             x <- df_dum[which(df_dum[,2]==input$Spe),1]
             rm(df_dum)
             if(length(x) != length(offre.attr)){
-              x <- c(x,rep(8305,length(offre.attr) - length(x)))
+              x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
             Attracti[which(indic_ville==i)] <- (Sx - SXmin)/(SXmax-SXmin)
@@ -668,6 +705,7 @@ shinyServer(function(input,output){
   
   output$plot_attr_ville <- renderPlot({
     ECN_data <- dataset()
+    Offre_data <- Offre()
     spe.vec<-as.numeric(substr(ECN_data[,11],start=5,stop=7))
     ville.vec<-as.numeric(substr(ECN_data[,11],start=2,stop=4))
     ECN_data.dum <- ECN_data
@@ -680,17 +718,21 @@ shinyServer(function(input,output){
         nbr.poste.t <- as.numeric(Offre_data[29,31])
         if(is.na(nbr.poste)){Attracti[which(indic_spe==i)] <- NA
         } else {
-          offre.attr <- df_offre.comp[-which(ECN_data[,11]==""),1]
-          if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
-            SXmax <- 8305*nbr.poste
+          if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
+            offre.attr <- df_offre.comp[-which(ECN_data[,11]==""),1]
           } else {
-            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep(8305, (nbr.poste.t - length(offre.attr)))))
+            offre.attr <- df_offre.comp[,1]
+          }
+          if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
+            SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
+          } else {
+            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
           }
           offre.attr <- offre.attr[1:nbr.poste]
           SXmin <- sum(offre.attr)
           x <- df_offre.comp[which(df_offre.comp[,2]==i),1]
           if(length(x) != length(offre.attr)){
-            x <- c(x,rep(8305, length(offre.attr) - length(x)))
+            x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), length(offre.attr) - length(x)))
           }
           Sx <- sum(x)
           Attracti[which(indic_spe==i)] <- (Sx - SXmin)/(SXmax-SXmin)
@@ -705,16 +747,16 @@ shinyServer(function(input,output){
           } else {
             offre.attr <- df_offre.comp[which(df_offre.comp[,3] == input$Ville),1]
             if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
-              SXmax <- 8305*nbr.poste
+              SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
             } else {
-              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep(8305, (nbr.poste.t - length(offre.attr)))))
+              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
             }
             offre.attr <- offre.attr[1:nbr.poste]
             SXmin <- sum(offre.attr)
             df_dum <- df_offre.comp[which(df_offre.comp[,3] == input$Ville),]
             x <- df_dum[which(df_dum[,2]==i),1]
             if(length(x) != length(offre.attr)){
-              x <- c(x,rep(8305,length(offre.attr) - length(x)))
+              x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
             Attracti[which(indic_spe==i)] <- (Sx - SXmin)/(SXmax-SXmin)
