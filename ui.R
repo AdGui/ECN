@@ -155,7 +155,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
     
     tabPanel(h4("Postes pourvus"),
       conditionalPanel(
-      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'",
+      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014' || input.ChoixBDD == 'affectations2010'",
       fluidRow(
         column(2,h4("Options des graphiques : ")),
                
@@ -214,14 +214,14 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       plotOutput("plot_sel_ville")
     ),
     conditionalPanel(
-      condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014'",
+      condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010'",
       p("En travaux, non disponible pour l'instant")
     )
     ),
     
     tabPanel(h4("Attractivités"),
       conditionalPanel(
-      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'",
+      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'|| input.ChoixBDD == 'affectations2010'",
                
       fluidRow(
         column(2,h4("Options des graphiques : ")),
@@ -254,7 +254,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       p("L'attactivité reflète donc soit la capacité à attirer les meilleurs compte-tenu du classement global, soit les meilleurs compte-tenu d'un classement spécifique (au sein d'une spécialité ou d'une subdivision).")
     ),  
     conditionalPanel(
-     condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014'",
+     condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010'",
       p("En travaux, non disponible pour l'instant")
     )
     ),
