@@ -78,7 +78,7 @@ dis <- gsub(x=dis, pattern="[[:space:]][a][u][x][[:space:]].*",replacement="")
 
 df.dum <- data.frame(nom,prenom,sexe,ddj,ddm,dda,rang,sub,dis)
 
-write.csv(df.dum, file="BDD2010")
+write.csv(df.dum, file="BDD2010.csv")
 
 #### corrections ####
 #### 2011
