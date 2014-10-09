@@ -22,8 +22,10 @@ shinyServer(function(input,output){
     }
     vec <- c()
     if(input$ChoixBDD == "affectations2010"){
-      Offre_data <- read.csv("./data/Offre_2010.csv", fileEncoding="UTF-8")
-      Offre_data <- Offre_data[,-1]
+      Offre_data <- read.csv("./data/Offre_2010.csv")
+    }
+    if(input$ChoixBDD == "affectations2011"){
+      Offre_data <- read.csv("./data/Offre_2011.csv")
     }
     row.names(Offre_data) <- Offre_data[,1]
     Offre_data <- Offre_data[,-1]
@@ -360,16 +362,18 @@ shinyServer(function(input,output){
       if(input$Ville == 0) {
         if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
           ECN_data.dum <- ECN_data.dum[-which(ECN_data.dum[,11]==""), ]
-        }
-      } else {ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]}
+        } else {}
+      } else {
+        ECN_data.dum <- ECN_data.dum[which(ville.vec == input$Ville),]
+      }
       if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
         vec.2 <- levels(as.factor(as.character(ECN_data[-which(ECN_data[,11]==""), ][,8])))
+        ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=vec.2,to=xlab_spe.2)
       } else {
         vec.2 <- levels(as.factor(as.character(ECN_data[,8])))
-      }
-      ECN_data.dum[,8] <- mapvalues(ECN_data.dum[,8],from=vec.2,to=xlab_spe.2)
+      }      
       df_order.dum <- ddply(ECN_data.dum, .(Discipline), summarize, median=length(Etudiant))
-      vec0 <- xlab_spe.2[-which(xlab_spe.2 %in% df_order.dum$Discipline)]
+      vec0 <- vec.2[-which(vec.2 %in% df_order.dum$Discipline)]
       df_order <- data.frame(Discipline = c(as.character(df_order.dum$Discipline),vec0), Etudiant=c(df_order.dum[,2],rep(0,length(vec0))))
       df_order <- df_order[order(df_order[,2],decreasing=TRUE),]
       df_order[,1] <- factor(df_order[,1], levels = df_order[,1])
