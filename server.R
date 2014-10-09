@@ -22,7 +22,7 @@ shinyServer(function(input,output){
     }
     vec <- c()
     if(input$ChoixBDD == "affectations2010"){
-      Offre_data <- read.csv("./data/Offre_2010.csv")
+      Offre_data <- read.csv("./data/Offre_2010.csv",fileEncoding = "UTF-8")
     }
     if(input$ChoixBDD == "affectations2011"){
       Offre_data <- read.csv("./data/Offre_2011.csv")
@@ -411,6 +411,12 @@ shinyServer(function(input,output){
       for( i in 1:length(Pourvu[,1])){
         for( j in 1:length(Pourvu[1,])){
           Pourcent_Pourvu[i,j] <- Pourvu[i,j]/as.numeric(Offre_data[i,j])
+          if(is.na(Pourcent_Pourvu[i,j])){
+          } else {
+            if(Pourcent_Pourvu[i,j] > 1 ){
+              Pourcent_Pourvu[i,j] <- 1
+            }
+          }
         }
       }
       
@@ -539,6 +545,12 @@ shinyServer(function(input,output){
       for( i in 1:length(Pourvu[,1])){
         for( j in 1:length(Pourvu[1,])){
           Pourcent_Pourvu[i,j] <- Pourvu[i,j]/as.numeric(Offre_data[i,j])
+          if(is.na(Pourcent_Pourvu[i,j])){
+          } else {
+            if(Pourcent_Pourvu[i,j] > 1 ){
+              Pourcent_Pourvu[i,j] <- 1
+            }
+          }
         }
       }
       
