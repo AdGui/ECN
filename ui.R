@@ -154,8 +154,8 @@ shinyUI(fluidPage(theme = "bootstrap.css",
     ),
     
     tabPanel(h4("Postes pourvus"),
-      conditionalPanel(
-      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014' || input.ChoixBDD == 'affectations2010' || input.ChoixBDD == 'affectations2011'",
+      #conditionalPanel(
+      #condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014' || input.ChoixBDD == 'affectations2010' || input.ChoixBDD == 'affectations2011'|| input.ChoixBDD == 'affectations2012'",
       fluidRow(
         column(2,h4("Options des graphiques : ")),
                
@@ -212,16 +212,16 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       h3("Nombre/pourcentage de postes pourvus par villes"),
       h6("Il est possible de restreindre par classement et par spécialité"),
       plotOutput("plot_sel_ville")
-    ),
-    conditionalPanel(
-      condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010' && input.ChoixBDD != 'affectations2011'",
-      p("En travaux, non disponible pour l'instant")
-    )
+    #),
+    #conditionalPanel(
+    #  condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010' && input.ChoixBDD != 'affectations2011' && input.ChoixBDD != 'affectations2012'",
+    #  p("En travaux, non disponible pour l'instant")
+    #)
     ),
     
     tabPanel(h4("Attractivités"),
-      conditionalPanel(
-      condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'|| input.ChoixBDD == 'affectations2010' || input.ChoixBDD == 'affectations2011'",
+      #conditionalPanel(
+      #condition = "input.ChoixBDD == 'affectations2014' || input.ChoixBDD == 'simulations2014'|| input.ChoixBDD == 'affectations2010'|| input.ChoixBDD == 'affectations2011'|| input.ChoixBDD == 'affectations2012'",
                
       fluidRow(
         column(2,h4("Options des graphiques : ")),
@@ -252,17 +252,17 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       p("Aux postes non remplis ont été affecté le rang maximal + 1"),
       p("Le choix de la méthode de calcul fait varier le façon de classer les étudiants. Si on prend l'exemple du Xe du classement, classé premier dans sa spécialité. Avec la méthode \"globale\" son rang sera X avec la méthode \"dans\" son rang sera 1."),
       p("L'attactivité reflète donc soit la capacité à attirer les meilleurs compte-tenu du classement global, soit les meilleurs compte-tenu d'un classement spécifique (au sein d'une spécialité ou d'une subdivision).")
-    ),  
-    conditionalPanel(
-     condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010' && input.ChoixBDD != 'affectations2011'",
-      p("En travaux, non disponible pour l'instant")
-    )
+    #),  
+    #conditionalPanel(
+    # condition = "input.ChoixBDD != 'affectations2014' && input.ChoixBDD != 'simulations2014' && input.ChoixBDD != 'affectations2010' && input.ChoixBDD != 'affectations2011' && input.ChoixBDD != 'affectations2012'",
+    #  p("En travaux, non disponible pour l'instant")
+    #)
     ),
                     
     tabPanel(h4("Légendes"),
       h3("Notice",style="text-decoration:underline;"),
       p("Les étudiants CESP comme ceux des armées ne sont pas inclus aux analyses pour 2014 (y compris pour l'avancement des choix)."),
-      p("Pour les autres années, ils sont probablement incorporés aux résultats sans distinction possible."),
+      p("Pour les autres années, ils sont incorporés aux résultats sans distinction possible. De ce fait une correction a du être faite sur les données d'offre de poste : les offres de postes classiques et celles pour les CESP ont été fusionnées."),
       p("L\'ensemble des données sont issues de : ", a("https://www.cngsante.fr/chiron2014/celine/listing.html", href="https://www.cngsante.fr/chiron2014/celine/listing.html")),
       h3("Légende spécialités"),
       tableOutput("legende_spe"),
