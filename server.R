@@ -17,15 +17,20 @@ indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,0
 shinyServer(function(input,output){
   
   Offre <- reactive({
-    if(input$ChoixBDD %in% c("simulations2014","affectations2014")){
-      Offre_data <- read.csv("./data/Offre_2014.csv",fileEncoding = "UTF-8")
-    }
-    vec <- c()
     if(input$ChoixBDD == "affectations2010"){
-      Offre_data <- read.csv("./data/Offre_2010.csv",fileEncoding = "UTF-8")
+      Offre_data <- read.csv("./data/Offre_2010_CESP.csv", fileEncoding = "latin1")
     }
     if(input$ChoixBDD == "affectations2011"){
-      Offre_data <- read.csv("./data/Offre_2011.csv")
+      Offre_data <- read.csv("./data/Offre_2011_CESP.csv", fileEncoding = "UTF-8")
+    }
+    if(input$ChoixBDD == "affectations2012"){
+      Offre_data <- read.csv("./data/Offre_2012_CESP.csv", fileEncoding = "UTF-8")
+    }
+    if(input$ChoixBDD == "affectations2013"){
+      Offre_data <- read.csv("./data/Offre_2013_CESP.csv", fileEncoding = "UTF-8")
+    }
+    if(input$ChoixBDD %in% c("simulations2014","affectations2014")){
+      Offre_data <- read.csv("./data/Offre_2014.csv",fileEncoding = "UTF-8")
     }
     row.names(Offre_data) <- Offre_data[,1]
     Offre_data <- Offre_data[,-1]
@@ -411,12 +416,12 @@ shinyServer(function(input,output){
       for( i in 1:length(Pourvu[,1])){
         for( j in 1:length(Pourvu[1,])){
           Pourcent_Pourvu[i,j] <- Pourvu[i,j]/as.numeric(Offre_data[i,j])
-          if(is.na(Pourcent_Pourvu[i,j])){
-          } else {
-            if(Pourcent_Pourvu[i,j] > 1 ){
-              Pourcent_Pourvu[i,j] <- 1
-            }
-          }
+          #if(is.na(Pourcent_Pourvu[i,j])){
+          #} else {
+          #  if(Pourcent_Pourvu[i,j] > 1 ){
+          #    Pourcent_Pourvu[i,j] <- 1
+          #  }
+          #}
         }
       }
       
@@ -545,12 +550,12 @@ shinyServer(function(input,output){
       for( i in 1:length(Pourvu[,1])){
         for( j in 1:length(Pourvu[1,])){
           Pourcent_Pourvu[i,j] <- Pourvu[i,j]/as.numeric(Offre_data[i,j])
-          if(is.na(Pourcent_Pourvu[i,j])){
-          } else {
-            if(Pourcent_Pourvu[i,j] > 1 ){
-              Pourcent_Pourvu[i,j] <- 1
-            }
-          }
+          #if(is.na(Pourcent_Pourvu[i,j])){
+          #} else {
+          #  if(Pourcent_Pourvu[i,j] > 1 ){
+          #    Pourcent_Pourvu[i,j] <- 1
+          #  }
+          #}
         }
       }
       
@@ -617,6 +622,7 @@ shinyServer(function(input,output){
     df_offre.comp <- data.frame(as.numeric(as.character(ECN_data.dum[,4])),spe.vec,ville.vec)
     Attracti<-c()
     nbr.poste <- c()
+    times <- c()
     if(input$Spe==000){
       for(i in indic_ville){
         nbr.poste <- as.numeric(Offre_data[which(Offre_vec_ville==i),31])
@@ -632,12 +638,13 @@ shinyServer(function(input,output){
           if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
             SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
           } else {
-            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
+            times <- (nbr.poste.t - length(offre.attr))
+            SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (times))):length(offre.attr)], rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), times)))
           }
           offre.attr <- offre.attr[1:nbr.poste]
           SXmin <- sum(offre.attr)
           x <- df_offre.comp[which(df_offre.comp[,3]==i),1]
-          if(length(x) != length(offre.attr)){
+          if(length(x) < length(offre.attr)){
             x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
           }
           Sx <- sum(x)
@@ -662,7 +669,7 @@ shinyServer(function(input,output){
             df_dum <- df_offre.comp[which(df_offre.comp[,3]==i),]
             x <- df_dum[which(df_dum[,2]==input$Spe),1]
             rm(df_dum)
-            if(length(x) != length(offre.attr)){
+            if(length(x) < length(offre.attr)){
               x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
@@ -692,7 +699,7 @@ shinyServer(function(input,output){
             } else { 
               x <- which(df_offre.comp[which(df_offre.comp[,2]==input$Spe),1] %in% x)
             }
-            if(length(x) != length(offre.attr)){
+            if(length(x) < length(offre.attr)){
               x <- c(x,rep((nbr.poste.t + 1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
@@ -747,7 +754,7 @@ shinyServer(function(input,output){
           offre.attr <- offre.attr[1:nbr.poste]
           SXmin <- sum(offre.attr)
           x <- df_offre.comp[which(df_offre.comp[,2]==i),1]
-          if(length(x) != length(offre.attr)){
+          if(length(x) < length(offre.attr)){
             x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), length(offre.attr) - length(x)))
           }
           Sx <- sum(x)
@@ -771,7 +778,7 @@ shinyServer(function(input,output){
             SXmin <- sum(offre.attr)
             df_dum <- df_offre.comp[which(df_offre.comp[,3] == input$Ville),]
             x <- df_dum[which(df_dum[,2]==i),1]
-            if(length(x) != length(offre.attr)){
+            if(length(x) < length(offre.attr)){
               x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
@@ -801,7 +808,7 @@ shinyServer(function(input,output){
             } else { 
               x <- which(df_offre.comp[which(df_offre.comp[,3]==input$Ville),1] %in% x)
             }
-            if(length(x) != length(offre.attr)){
+            if(length(x) < length(offre.attr)){
               x <- c(x,rep((nbr.poste.t + 1),length(offre.attr) - length(x)))
             }
             Sx <- sum(x)
