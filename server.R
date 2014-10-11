@@ -623,6 +623,11 @@ shinyServer(function(input,output){
     Attracti<-c()
     nbr.poste <- c()
     times <- c()
+    borne.1 <- c()
+    borne.2 <- c()
+    borne.3 <- c()
+    vec.1 <- c()
+    vec.2 <- c()
     if(input$Spe==000){
       for(i in indic_ville){
         nbr.poste <- as.numeric(Offre_data[which(Offre_vec_ville==i),31])
@@ -656,24 +661,34 @@ shinyServer(function(input,output){
         for(i in indic_ville){
           nbr.poste <- as.numeric(Offre_data[which(Offre_vec_ville==i),which(Offre_vec_spe==input$Spe)])
           nbr.poste.t <- as.numeric(Offre_data[29,which(Offre_vec_spe==input$Spe)])
-          if(is.na(nbr.poste)){ Attracti[which(indic_ville==i)] <- NA
+          if(is.na(nbr.poste)){
+            Attracti[which(indic_ville==i)] <- NA
           } else {
             offre.attr <- df_offre.comp[which(df_offre.comp[,2]==input$Spe),1]
             if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
               SXmax <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
             } else {
-              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1), (nbr.poste.t - length(offre.attr)))))
+              borne.1 <- nbr.poste.t - nbr.poste + 1
+              borne.2 <- nbr.poste.t
+              borne.3 <- length(offre.attr)
+              vec.1 <- offre.attr[borne.1:borne.3]
+              vec.2 <- rep(max(ECN_data.dum$Etudiant,na.rm=T) + 1, borne.2 - borne.3)
+              SXmax <- sum(c(vec.1,vec.2))
             }
-            offre.attr <- offre.attr[1:nbr.poste]
-            SXmin <- sum(offre.attr)
+            SXmin <- sum(offre.attr[1:nbr.poste])
             df_dum <- df_offre.comp[which(df_offre.comp[,3]==i),]
             x <- df_dum[which(df_dum[,2]==input$Spe),1]
-            rm(df_dum)
-            if(length(x) < length(offre.attr)){
-              x <- c(x,rep((max(ECN_data.dum$Etudiant,na.rm=T)+1),length(offre.attr) - length(x)))
+            if(length(x) < nbr.poste){
+              if(length(x) == 0){
+                Sx <- (max(ECN_data.dum$Etudiant,na.rm=T)+1)*nbr.poste
+              } else {
+                x <- c(x,rep(max(ECN_data.dum$Etudiant,na.rm=T)+1,nbr.poste - length(x)))
+                Sx <- sum(x)
+              }
+            } else {
+              Sx <- sum(x)
             }
-            Sx <- sum(x)
-            Attracti[which(indic_ville==i)] <- (Sx - SXmin)/(SXmax-SXmin)
+            Attracti[which(indic_ville == i)] <- (Sx - SXmin)/(SXmax - SXmin)
           }
         }
       }
@@ -681,28 +696,35 @@ shinyServer(function(input,output){
         for(i in indic_ville){
           nbr.poste <- as.numeric(Offre_data[which(Offre_vec_ville==i),which(Offre_vec_spe==input$Spe)])
           nbr.poste.t <- as.numeric(Offre_data[29,which(Offre_vec_spe==input$Spe)])
-          if(is.na(nbr.poste)){ Attracti[which(indic_ville==i)] <- NA
+          if(is.na(nbr.poste)){
+            Attracti[which(indic_ville==i)] <- NA
           } else {
             offre.attr <- df_offre.comp[which(df_offre.comp[,2]==input$Spe),1]
             offre.attr <- c(1:length(offre.attr))
             if((nbr.poste.t - length(offre.attr)) >= nbr.poste){
-              SXmax <- (nbr.poste.t + 1) * nbr.poste
+              SXmax <- (length(offre.attr) + 1) * nbr.poste
             } else {
-              SXmax <- sum(c(offre.attr[(length(offre.attr) - (nbr.poste - (nbr.poste.t - length(offre.attr)))):length(offre.attr)] ,rep((nbr.poste.t + 1), (nbr.poste.t - length(offre.attr)))))
+              borne.1 <- nbr.poste.t - nbr.poste + 1
+              borne.2 <- nbr.poste.t
+              borne.3 <- length(offre.attr)
+              vec.1 <- offre.attr[borne.1:borne.3]
+              vec.2 <- rep(length(offre.attr) + 1, borne.2 - borne.3)
+              SXmax <- sum(c(vec.1,vec.2))
             }
-            offre.attr <- offre.attr[1:nbr.poste]
-            SXmin  <- sum(offre.attr)
-            df_dum <- df_offre.comp[which(df_offre.comp[,3]==i),]
-            x <- df_dum[which(df_dum[,2]==input$Spe),1]
-            if(length(x)==0){ 
-              x <- NULL
-            } else { 
-              x <- which(df_offre.comp[which(df_offre.comp[,2]==input$Spe),1] %in% x)
+            SXmin  <- sum(offre.attr[1:nbr.poste])
+            df_dum <- df_offre.comp[which(df_offre.comp[,2]==input$Spe),]
+            df_dum$x <- 1:length(df_dum[,1])
+            x <- df_dum$x[which(df_dum[,3]==i)]
+            if(length(x) < nbr.poste){ 
+              if(length(x) == 0){
+                Sx <- (length(offre.attr) + 1)*nbr.poste
+              } else {
+                x <- c(x, rep(length(offre.attr) + 1, nbr.poste - length(x)))
+                Sx <- sum(x)
+              }
+            } else {
+              Sx <- sum(x)
             }
-            if(length(x) < length(offre.attr)){
-              x <- c(x,rep((nbr.poste.t + 1),length(offre.attr) - length(x)))
-            }
-            Sx <- sum(x)
             Attracti[which(indic_ville==i)] <- (Sx - SXmin)/(SXmax - SXmin)
           }
         }
