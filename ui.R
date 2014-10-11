@@ -249,7 +249,7 @@ shinyUI(fluidPage(theme = "bootstrap.css",
       p("Sx la somme des rangs effectifs"),
       p("SXmin la somme minimal atteignable des rangs selon la subdivision et/ou la spécialité"),
       p("SXmax la somme maximal des rangs atteignables selon la subdivision et/ou la spécialité"),
-      p("Aux postes non remplis ont été affecté le rang maximal + 1"),
+      p("Aux postes non remplis ont été affecté le dernier rang choisi + 1"),
       p("Le choix de la méthode de calcul fait varier le façon de classer les étudiants. Si on prend l'exemple du Xe du classement, classé premier dans sa spécialité. Avec la méthode \"globale\" son rang sera X avec la méthode \"dans\" son rang sera 1."),
       p("L'attactivité reflète donc soit la capacité à attirer les meilleurs compte-tenu du classement global, soit les meilleurs compte-tenu d'un classement spécifique (au sein d'une spécialité ou d'une subdivision).")
     #),  
