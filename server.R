@@ -10,8 +10,8 @@ Offre_vec_spe <- c(11,4,3,5,9,6,2,10,7,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22
 xlab_ville <- c("AixM","Ami","Ang","AntG","Bes","Bord","Bre","Cae","CleF","Dij","Gre","IDF","Lil","Lim","Ly","Mon","Nanc","Nant","Nic","OceI","Poi","Rei","Ren","Rou","StE","Stra","Toul","Tour")
 indic_ville <- c(034,021,028,041,016,037,029,022,038,017,025,015,023,039,026,035,018,030,036,042,031,019,032,024,027,020,040,033)
 xlab_spe <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
-#xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Ped","Psy","SP","ChG","ChOr","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Nep","Neu","Onc","Pne","Rad","Rhu")
+#xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Psy","Ped","SP","ChOr","ChG","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Neu","Nep","Onc","Pne","Rad","Rhu")
+xlab_spe.2 <- c("AR","Bi","GyM","GyO","MT","MG","Ped","Psy","SP","ChG","ChOr","ChN","Opht","ORL","An","Ca","De","En","Ga","GM","He","MI","MN","MPR","Nep","Neu","Onc","Pne","Rad","Rhu")
 indic_spe <- c(004,003,005,009,006,011,010,002,007,032,028,029,030,031,012,013,014,015,016,017,018,019,020,021,023,022,024,025,026,027)
 
 shinyServer(function(input,output){
@@ -58,8 +58,8 @@ shinyServer(function(input,output){
     }
     ECN_data <- read.csv(con, sep=",")
     
-    vec.spe <- c()
-    vec.sub <- c()
+    vec.spe <- rep(NA, length(ECN_data[,1]))
+    vec.sub <- rep(NA, length(ECN_data[,1]))
     
     if(input$ChoixBDD %in% c("affectations2014","simulations2014")){
       ECN_data <- ECN_data[,-1]
@@ -195,7 +195,7 @@ shinyServer(function(input,output){
     ECN_data[,4] <- as.numeric(ECN_data[,4])
     if(input$Ville != 0){
       if(input$Spe != 0){
-        ECN_comb<-ECN_data[which(ville.vec==input$Ville & spe.vec==input$Spe),]
+        ECN_comb <- ECN_data[which(ville.vec==input$Ville & spe.vec==input$Spe),]
         if(length(ECN_comb[,1])==0){ 
           df<-data.frame(v1="pas de candidat pour cette combinaison")
         } else {

@@ -1,7 +1,7 @@
 library(shiny)
 
-shinyUI(fluidPage(theme = "bootstrap.css",
-  tags$head(includeScript("google-analytics.js")),
+shinyUI(fluidPage(
+  theme = "yeti.css",
   h3("Analyse des choix post-ECN"),
 #  h5("L'application peut bloquer de temps à autre, ne pas hésiter à rafraîchir, à rééssayer à 10 minutes d'intervalle."),
   br(),
